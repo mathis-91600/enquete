@@ -58,7 +58,8 @@ jobs:
         run: echo "Préparation de la livraison pour ${{ github.event.inputs.nom_client }}"
 
       - name: Liste des pizzas à livrer
-        run: echo "Les pizzas à livrer sont : ${{ needs.reception-commande.outputs.pizzas }}"
+        run: |
+          echo "Les pizzas à livrer sont : ${{ needs.reception-commande.outputs.pizzas }}"
 
   reclamation:
     needs: livraison
