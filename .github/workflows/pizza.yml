@@ -28,7 +28,8 @@ jobs:
 
       - name: Set pizzas as output
         id: set-pizzas
-        run: echo "pizzas=${{ github.event.inputs.pizzas }}" >> $GITHUB_OUTPUT
+        run: |
+          echo "pizzas=${{ github.event.inputs.pizzas }}" >> $GITHUB_OUTPUT
 
   cuisine:
     needs: reception-commande
