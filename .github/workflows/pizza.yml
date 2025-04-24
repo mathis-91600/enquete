@@ -21,10 +21,12 @@ jobs:
       pizzas: ${{ steps.set-pizzas.outputs.pizzas }}
     steps:
       - name: Message d'accueil
-        run: echo "Bienvenue ${{ github.event.inputs.nom_client }} chez Grand Challenger Pizzeria !"
+        run: |
+          echo "Bienvenue ${{ github.event.inputs.nom_client }} chez Grand Challenger Pizzeria !"
 
       - name: Confirmation de commande
-        run: echo "Commande reçue pour les pizzas : ${{ github.event.inputs.pizzas }}"
+        run: |
+          echo "Commande reçue pour les pizzas : ${{ github.event.inputs.pizzas }}"
 
       - name: Set pizzas as output
         id: set-pizzas
