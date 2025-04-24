@@ -1,0 +1,74 @@
+name: Pizzeria
+
+on:
+  workflow_dispatch:
+    inputs:
+      nom_client:
+        description: "Nom du client"
+        required: true
+      pizzas:
+        description: |
+          Liste des pizzas au format JSON. Attention aux points importants:
+          - Utilisez des guillemets doubles
+          - Entourez la liste avec []
+          Exemple: ["margherita","reine","calzone"]
+        required: true
+
+jobs:
+  reception-commande:
+    runs-on: ubuntu-latest
+    outputs:
+      pizzas: ${{ steps.set-pizzas.outputs.pizzas }}
+    steps:
+      - name: Message d'accueil
+        run: echo "Bienvenue ${{ github.event.inputs.nom_client }} chez Grand Challenger Pizzeria !"
+
+      - name: Confirmation de commande
+        run: echo "Commande reçue pour les pizzas : ${{ github.event.inputs.pizzas }}"
+
+      - name: Set pizzas as output
+        id: set-pizzas
+        run: echo "pizzas=${{ github.event.inputs.pizzas }}" >> $GITHUB_OUTPUT
+
+  cuisine:
+    needs: reception-commande
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - pizza: dessert
+            taille: L
+        pizza: ${{ fromJSON(needs.reception-commande.outputs.pizzas) }}
+        taille: [L, XL]
+    steps:
+      - name: Préparation de la pizza
+        run: echo "Préparation de la pizza '${{ matrix.pizza }}' en taille '${{ matrix.taille }}'"
+
+  livraison:
+    needs: cuisine
+    runs-on: ubuntu-latest
+    concurrency:
+      group: livraison
+      cancel-in-progress: true
+    steps:
+      - name: Préparation de la livraison
+        run: echo "Préparation de la livraison pour ${{ github.event.inputs.nom_client }}"
+
+      - name: Liste des pizzas à livrer
+        run: echo "Les pizzas à livrer sont : ${{ needs.reception-commande.outputs.pizzas }}"
+
+  reclamation:
+    needs: livraison
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Créer une issue de réclamation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create --title "Réclamation pour ${{ github.event.inputs.nom_client }}" \
+                          --body "Bonjour, je souhaite faire une réclamation sur la commande : ${{ github.event.inputs.pizzas }}"
